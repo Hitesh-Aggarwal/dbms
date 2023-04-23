@@ -1,3 +1,4 @@
+-- Crate tables
 CREATE TABLE
   student (
     ROLLNO number PRIMARY KEY,
@@ -12,19 +13,11 @@ CREATE TABLE
     bookname varchar(50),
     author varchar(40),
     publication varchar(20),
+    cost number,
     noofcopies number,
     PRIMARY KEY (isbn)
   );
 
-create table
-  issue (
-    bookid number,
-    rollno number,
-    issue_date number,
-    return_date number,
-    fine number,
-    primary key (bookid)
-  )
 CREATE TABLE
   book (
     bookid number PRIMARY KEY,
@@ -32,16 +25,39 @@ CREATE TABLE
     availability varchar(1) check (
       (availability = 'A')
       or (availability = 'O')
-    ) cost number,
+    )
   );
 
 CREATE TABLE
   subscription (
-    bookno number,
+    bookid number,
     rollno number,
     do_sub date,
     do_return date,
     fineamount number,
     status varchar(10),
-    primary KEY (BOOKNO, ROLLNO)
+    primary KEY (bookid)
   );
+
+-- Drop tables
+drop table student;
+drop table subscription;
+drop table lib;
+drop table book;
+
+-- select statements
+select * from student;
+select * from subscription;
+select * from lib;
+select * from book;
+
+-- Add foreign keys now.
+ALTER TABLE book
+ADD CONSTRAINT book_fk
+FOREIGN KEY (isbn)
+REFERENCES lib(isbn);
+
+ALTER TABLE subscription
+ADD CONSTRAINT subscription_fk
+FOREIGN KEY (rollno)
+REFERENCES student(rollno);
