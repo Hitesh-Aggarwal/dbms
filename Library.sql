@@ -79,6 +79,15 @@ INSERT INTO student VALUES (8, 'MONICA', 639639639, 0, 0);
 INSERT INTO student VALUES (9, 'PHOEBE', 678678678, 0, 0);
 INSERT INTO student VALUES (10, 'RACHEL', 687687687,0, 0);
 
+insert into lib values(1234,'Lord Of Chaos', 'Robert Jordan', 'MacMillan', 10, 100, 1);
+insert into lib values(1235,'Fires Of Heaven', 'Robert Jordan', 'MacMillan', 11, 100, 1);
+
+insert into book values(NULL, 1234, 'A');
+insert into book values(NULL, 1235, 'A');
+
+insert into subscription values(1,1, to_date('01-02-2023','dd-mm-yyyy'), to_date('27-02-2023','dd-mm-yyyy'), to_date('01-03-2023','dd-mm-yyyy'));
+insert into subscription values(1,2, to_date('01-02-2023','dd-mm-yyyy'), to_date('27-02-2023','dd-mm-yyyy'), to_date('25-02-2023','dd-mm-yyyy'))
+
 
 ------------------ plsql starts here -----------------------
 
@@ -193,3 +202,5 @@ begin
   rollno := &rollno;
   pay_fine(rollno);
 end;
+
+
