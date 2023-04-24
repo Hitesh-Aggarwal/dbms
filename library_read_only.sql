@@ -15,15 +15,15 @@ CREATE TABLE
     author varchar(40),
     publication varchar(20),
     cost number,
-    noofcopies number,
+    copies number,
+    lost_cost number,
+    delay_cost number
   );
 
 CREATE TABLE
   book (
     bookid number PRIMARY KEY,
     isbn number,
-    lost_cost number,
-    delay_cost number,
     availability varchar(1) CHECK (
       (availability = 'A')
       OR (availability = 'O')
