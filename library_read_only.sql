@@ -193,3 +193,14 @@ BEGIN
   rollno := &rollno;
   pay_fine(rollno);
 END;
+
+CREATE OR REPLACE PROCEDURE similar_author_books(auth in varchar)
+AS
+temp varchar(300);
+cursor c1 is select bookname from lib where author = auth;
+rec varchar(300);
+BEGIN
+for rec in c1 loop
+    dbms_output.put_line(rec.bookname);
+END LOOP;
+END;
