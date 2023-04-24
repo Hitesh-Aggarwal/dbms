@@ -203,57 +203,69 @@ begin
   pay_fine(rollno);
 end;
 
--- procedure 6 -- 
+-- procedure 6 --
 declare
-i_sbn number(13,0);
-c_opies lib.copies%type;
-d_elay_cost lib.delay_cost%type;
-b_ook_name lib.bookname%type;
-l_ost_cost lib.lost_cost%type;
-p_ublisher lib.publication%type;
-a_uthor lib.author%type;
-procedure book_info(i_sbn in number) is
+  i_sbn number;
+  c_opies lib.copies%type;
+  d_elay_cost lib.delay_cost%type;
+  b_ook_name lib.bookname%type;
+  l_ost_cost lib.lost_cost%type;
+  p_ublisher lib.publication%type;
+  a_uthor lib.author%type;
+  procedure book_info(i_sbn in number) is
+  begin
+    select copies,delay_cost,bookname,lost_cost,publication,author into c_opies,d_elay_cost,b_ook_name,l_ost_cost,p_ublisher,a_uthor from lib where lib.isbn=i_sbn;
+    dbms_output.put_line('Copies : '||c_opies);
+    dbms_output.put_line('delay_cost : '||d_elay_cost);
+    dbms_output.put_line('book_name : '||b_ook_name);
+    dbms_output.put_line('lost_cost : '||l_ost_cost);
+    dbms_output.put_line('publisher : '||p_ublisher);
+    dbms_output.put_line('author : '||a_uthor);
+  end;
 begin
-select copies,delay_cost,bookname,lost_cost,publication,author into c_opies,d_elay_cost,b_ook_name,l_ost_cost,p_ublisher,a_uthor from lib where lib.isbn=i_sbn;
-dbms_output.put_line('Copies : '||c_opies);
-dbms_output.put_line('delay_cost : '||d_elay_cost);
-dbms_output.put_line('book_name : '||b_ook_name);
-dbms_output.put_line('lost_cost : '||l_ost_cost);
-dbms_output.put_line('publisher : '||p_ublisher);
-dbms_output.put_line('author : '||a_uthor);
-end;
-begin
-dbms_output.put_line('Enter the book number');
-i_sbn:=12345;
-book_info(i_sbn);
+  dbms_output.put_line('Enter the book number');
+  i_sbn:=&i_sbn;
+  book_info(i_sbn);
 end;
 
 --Procedure 3
-
 create or replace procedure retreive_pending_fine(roll in number, fine in out number) as
-del_cost number;
-isb_no number;
-days number;
-cursor c is select * from subscription where rollno=roll;
+  del_cost number;
+  isb_no number;
+  days number;
+  cursor c is select * from subscription where rollno=roll;
 begin
-for rec in c loop
-dbms_output.put_line(to_char(rec.return_date));
-dbms_output.put_line(to_char(rec.actual_return_date));
-if rec.actual_return_date > rec.return_date then
-select isbn into isb_no from book where bookid=rec.bookid;
-select delay_cost into del_cost from lib where isbn=isb_no;
-days := rec.actual_return_date - rec.return_date;
-fine := fine + days*del_cost;
-end if;
-end loop;
-dbms_output.put_line('Done with procedure');
+  for rec in c loop
+    dbms_output.put_line(to_char(rec.return_date));
+    dbms_output.put_line(to_char(rec.actual_return_date));
+    if rec.actual_return_date > rec.return_date then
+      select isbn into isb_no from book where bookid=rec.bookid;
+      select delay_cost into del_cost from lib where isbn=isb_no;
+      days := rec.actual_return_date - rec.return_date;
+      fine := fine + days*del_cost;
+    end if;
+  end loop;
+  dbms_output.put_line('Done with procedure');
 end;
 
 declare
-roll number:= 1;
-fine number:= 0;
+  roll number;
+  fine number;
 begin
-retreive_pending_fine(roll,fine);
-dbms_output.put_line(fine);
+  roll = &roll;
+  fine = 0;
+  retreive_pending_fine(roll,fine);
+  dbms_output.put_line(fine);
 end;
 
+
+CREATE OR REPLACE PROCEDURE similar_author_books(auth in varchar)
+AS
+temp varchar(300);
+cursor c1 is select bookname from lib where author = auth;
+rec varchar(300);
+BEGIN
+for rec in c1 loop
+    dbms_output.put_line(rec.bookname);
+END LOOP;
+END;
