@@ -79,3 +79,25 @@ INSERT INTO student VALUES (8, 'MONICA', 639639639, 0, 0);
 INSERT INTO student VALUES (9, 'PHOEBE', 678678678, 0, 0);
 INSERT INTO student VALUES (10, 'RACHEL', 687687687,0, 0);
 
+
+------------------ plsql starts here -----------------------
+
+create or replace procedure add_student(roll_no in number, s_name in varchar(40), M_no in varchar(10))
+is
+begin
+  insert into student values(roll_no, s_name, M_no, 0,0);
+end;
+
+
+declare
+  roll_no number;
+  name varchar(50);
+  M_no varchar(10);
+begin
+  roll_no := &roll_no;
+  name := &name;
+  M_no := &M_no;
+  add_student(roll_no,name,M_no);
+end;
+
+create or replace procedure
