@@ -193,3 +193,27 @@ begin
   rollno := &rollno;
   pay_fine(rollno);
 end;
+-- procedure 6 -- 
+declare
+i_sbn number(13,0);
+c_opies lib.copies%type;
+d_elay_cost lib.delay_cost%type;
+b_ook_name lib.bookname%type;
+l_ost_cost lib.lost_cost%type;
+p_ublisher lib.publication%type;
+a_uthor lib.author%type;
+procedure book_info(i_sbn in number) is
+begin
+select copies,delay_cost,bookname,lost_cost,publication,author into c_opies,d_elay_cost,b_ook_name,l_ost_cost,p_ublisher,a_uthor from lib where lib.isbn=i_sbn;
+dbms_output.put_line('Copies : '||c_opies);
+dbms_output.put_line('delay_cost : '||d_elay_cost);
+dbms_output.put_line('book_name : '||b_ook_name);
+dbms_output.put_line('lost_cost : '||l_ost_cost);
+dbms_output.put_line('publisher : '||p_ublisher);
+dbms_output.put_line('author : '||a_uthor);
+end;
+begin
+dbms_output.put_line('Enter the book number');
+i_sbn:=12345;
+book_info(i_sbn);
+end;
