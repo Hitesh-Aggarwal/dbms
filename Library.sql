@@ -82,7 +82,8 @@ INSERT INTO student VALUES (10, 'RACHEL', 687687687,0, 0);
 
 ------------------ plsql starts here -----------------------
 
-create or replace procedure add_student(roll_no in number, s_name in varchar(40), M_no in varchar(10))
+create or replace procedure add_student(roll_no in number, s_name in varchar,
+ M_no in varchar)
 is
 begin
   insert into student values(roll_no, s_name, M_no, 0,0);
@@ -100,4 +101,47 @@ begin
   add_student(roll_no,name,M_no);
 end;
 
-create or replace procedure
+
+create or replace procedure add_first_book(
+  isbn_no in number,
+  bookname in varchar,
+  author in varchar,
+  publication in varchar,
+  lost_cost in number,
+  delay_cost in number) is
+begin
+  insert into book values(NULL, isbn_no, 'A');
+  insert into lib values(isbn_no, bookname,author,publication,1,lost_cost,
+    delay_cost);
+end;
+
+
+create or replace procedure add_more_books(isbn_no in number) is
+begin
+  insert into book values(NULL, isbn_no, 'A');
+  update lib set copies = copies + 1 where lib.isbn = isbn_no;
+end;
+
+
+declare
+  counter number;
+  isbn_no number;
+  bookname varchar(50);
+  author varchar(40);
+  publication varchar(20);
+  lost_cost number;
+  delay_cost number;
+begin
+  isbn_no = &isbn_no;
+  select count(*) into counter from lib where lib.isbn = isbn_no;
+  if counter > 0 then
+    add_more_books(isbn_no);
+  else
+    bookname := &bookname;
+    author := &author;
+    publication := &publication;
+    lost_cost := &lost_cost;
+    delay_cost := &delay_cost;
+    add_first_book(isbn_no,bookname,author,publication,lost_cost,delay_cost);
+  end if;
+end;
