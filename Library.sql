@@ -269,3 +269,50 @@ for rec in c1 loop
     dbms_output.put_line(rec.bookname);
 END LOOP;
 END;
+-- procedure 6 -- 
+declare
+i_sbn number(13,0);
+c_opies lib.copies%type;
+d_elay_cost lib.delay_cost%type;
+b_ook_name lib.bookname%type;
+l_ost_cost lib.lost_cost%type;
+p_ublisher lib.publication%type;
+a_uthor lib.author%type;
+procedure book_info(i_sbn in number) is
+begin
+select copies,delay_cost,bookname,lost_cost,publication,author into c_opies,d_elay_cost,b_ook_name,l_ost_cost,p_ublisher,a_uthor from lib where lib.isbn=i_sbn;
+dbms_output.put_line('Copies : '||c_opies);
+dbms_output.put_line('delay_cost : '||d_elay_cost);
+dbms_output.put_line('book_name : '||b_ook_name);
+dbms_output.put_line('lost_cost : '||l_ost_cost);
+dbms_output.put_line('publisher : '||p_ublisher);
+dbms_output.put_line('author : '||a_uthor);
+end;
+begin
+dbms_output.put_line('Enter the book number');
+i_sbn:=&i_sbn;
+book_info(i_sbn);
+end;
+
+-- procedure 8 -- 
+declare 
+book_id subscription.bookid%type;
+roll_no subscription.rollno%type;
+n_ame student.name%type;
+mobile_num student.M_no%type;
+f_ine student.fine%type;
+books_issued student.issued_books%type;
+procedure student_details(book_id in number) is
+begin
+select subscription.rollno into roll_no from subscription where bookid=book_id;
+select student.name,student.M_no,student.fine,student.issued_books into n_ame,mobile_num,f_ine,books_issued from student where student.rollno=roll_no;
+dbms_output.put_line('Name : '||n_ame);
+dbms_output.put_line('Mobile Number : '||mobile_num);
+dbms_output.put_line('fine : '||f_ine);
+dbms_output.put_line('Number of books issued : '||books_issued);
+end;
+begin
+dbms_output.put_line('Enter the isbn id of the book');
+book_id:=&book_id;
+student_details(book_id);
+end;
