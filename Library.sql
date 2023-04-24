@@ -79,3 +79,117 @@ INSERT INTO student VALUES (8, 'MONICA', 639639639, 0, 0);
 INSERT INTO student VALUES (9, 'PHOEBE', 678678678, 0, 0);
 INSERT INTO student VALUES (10, 'RACHEL', 687687687,0, 0);
 
+
+------------------ plsql starts here -----------------------
+
+create or replace procedure add_student(roll_no in number, s_name in varchar,
+ M_no in varchar)
+is
+begin
+  insert into student values(roll_no, s_name, M_no, 0,0);
+end;
+
+
+declare
+  roll_no number;
+  name varchar(50);
+  M_no varchar(10);
+begin
+  roll_no := &roll_no;
+  name := &name;
+  M_no := &M_no;
+  add_student(roll_no,name,M_no);
+end;
+
+
+create or replace procedure add_first_book(
+  isbn_no in number,
+  bookname in varchar,
+  author in varchar,
+  publication in varchar,
+  lost_cost in number,
+  delay_cost in number) is
+begin
+  insert into lib values(isbn_no, bookname,author,publication,1,lost_cost,
+    delay_cost);
+  insert into book values(NULL, isbn_no, 'A');
+end;
+
+
+create or replace procedure add_more_books(isbn_no in number) is
+begin
+  insert into book values(NULL, isbn_no, 'A');
+  update lib set copies = copies + 1 where lib.isbn = isbn_no;
+end;
+
+
+declare
+  counter number;
+  isbn_no number;
+  bookname varchar(50);
+  author varchar(40);
+  publication varchar(20);
+  lost_cost number;
+  delay_cost number;
+begin
+  isbn_no := &isbn_no;
+  select count(*) into counter from lib where lib.isbn = isbn_no;
+  if counter > 0 then
+    add_more_books(isbn_no);
+  else
+    bookname := &bookname;
+    author := &author;
+    publication := &publication;
+    lost_cost := &lost_cost;
+    delay_cost := &delay_cost;
+    add_first_book(isbn_no,bookname,author,publication,lost_cost,delay_cost);
+  end if;
+end;
+
+
+create or replace procedure return_book(book_id number, roll_no number) is
+i_date date;
+r_date date;
+ar_date date;
+isbn_no number;
+d_cost number;
+no_of_copies number;
+fine_amount number;
+begin
+  select isbn into isbn_no from book where bookid = book_id;
+  select copies, delay_cost into no_of_copies, d_cost from lib
+  where isbn = isbn_no;
+  no_of_copies := no_of_copies + 1;
+  update book set availability = 'A' where bookid = book_id;
+  update lib set copies = no_of_copies where isbn = isbn_no;
+  select issue_date, return_date, actual_return_date into i_date, r_date,
+  ar_date from subscription where bookid = book_id and rollno = roll_no;
+  if ar_date > r_date then
+    fine_amount := (ar_date - r_date) * d_cost;
+    update student set fine = fine_amount where rollno = roll_no;
+    dbms_output.put_line('Fine amount: ' || fine_amount);
+  end if;
+  update student set issued_books = issued_books - 1 where rollno = roll_no;
+  delete from subscription where bookid = book_id and rollno = roll_no;
+end;
+
+declare
+book_id number;
+roll_no number;
+begin
+  book_id := &book_id;
+  roll_no := &roll_no;
+  return_book(book_id,roll_no);
+end;
+
+create or replace procedure pay_fine(roll_no number) is
+begin
+  update student set fine = 0 where rollno = roll_no;
+end;
+
+declare
+rollno number;
+begin
+  rollno := &rollno;
+  pay_fine(rollno);
+end;
