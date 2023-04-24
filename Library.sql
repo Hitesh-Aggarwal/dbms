@@ -40,13 +40,13 @@ CREATE TABLE
   );
 
 -- Drop tables
-drop table student;
-
-drop table subscription;
-
-drop table lib;
-
-drop table book;
+-- drop table student;
+--
+-- drop table subscription;
+--
+-- drop table lib;
+--
+-- drop table book;
 
 -- select statements
 select * from student;
@@ -86,7 +86,7 @@ insert into book values(NULL, 1234, 'A');
 insert into book values(NULL, 1235, 'A');
 
 insert into subscription values(1,1, to_date('01-02-2023','dd-mm-yyyy'), to_date('27-02-2023','dd-mm-yyyy'), to_date('01-03-2023','dd-mm-yyyy'));
-insert into subscription values(1,2, to_date('01-02-2023','dd-mm-yyyy'), to_date('27-02-2023','dd-mm-yyyy'), to_date('25-02-2023','dd-mm-yyyy'))
+insert into subscription values(1,2, to_date('01-02-2023','dd-mm-yyyy'), to_date('27-02-2023','dd-mm-yyyy'), to_date('25-02-2023','dd-mm-yyyy'));
 
 
 ------------------ plsql starts here -----------------------
@@ -203,4 +203,57 @@ begin
   pay_fine(rollno);
 end;
 
+-- procedure 6 -- 
+declare
+i_sbn number(13,0);
+c_opies lib.copies%type;
+d_elay_cost lib.delay_cost%type;
+b_ook_name lib.bookname%type;
+l_ost_cost lib.lost_cost%type;
+p_ublisher lib.publication%type;
+a_uthor lib.author%type;
+procedure book_info(i_sbn in number) is
+begin
+select copies,delay_cost,bookname,lost_cost,publication,author into c_opies,d_elay_cost,b_ook_name,l_ost_cost,p_ublisher,a_uthor from lib where lib.isbn=i_sbn;
+dbms_output.put_line('Copies : '||c_opies);
+dbms_output.put_line('delay_cost : '||d_elay_cost);
+dbms_output.put_line('book_name : '||b_ook_name);
+dbms_output.put_line('lost_cost : '||l_ost_cost);
+dbms_output.put_line('publisher : '||p_ublisher);
+dbms_output.put_line('author : '||a_uthor);
+end;
+begin
+dbms_output.put_line('Enter the book number');
+i_sbn:=12345;
+book_info(i_sbn);
+end;
+
+--Procedure 3
+
+create or replace procedure retreive_pending_fine(roll in number, fine in out number) as
+del_cost number;
+isb_no number;
+days number;
+cursor c is select * from subscription where rollno=roll;
+begin
+for rec in c loop
+dbms_output.put_line(to_char(rec.return_date));
+dbms_output.put_line(to_char(rec.actual_return_date));
+if rec.actual_return_date > rec.return_date then
+select isbn into isb_no from book where bookid=rec.bookid;
+select delay_cost into del_cost from lib where isbn=isb_no;
+days := rec.actual_return_date - rec.return_date;
+fine := fine + days*del_cost;
+end if;
+end loop;
+dbms_output.put_line('Done with procedure');
+end;
+
+declare
+roll number:= 1;
+fine number:= 0;
+begin
+retreive_pending_fine(roll,fine);
+dbms_output.put_line(fine);
+end;
 
