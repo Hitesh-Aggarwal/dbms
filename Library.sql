@@ -204,6 +204,7 @@ begin
 end;
 
 -- procedure 6 --
+-- BOOK INFO --
 declare
   i_sbn number;
   c_opies lib.copies%type;
@@ -228,7 +229,7 @@ begin
   book_info(i_sbn);
 end;
 
---Procedure 3
+-- Get the total fine of a student
 create or replace procedure retreive_pending_fine(roll in number, fine in out number) as
   del_cost number;
   isb_no number;
@@ -245,7 +246,7 @@ begin
       fine := fine + days*del_cost;
     end if;
   end loop;
-  dbms_output.put_line('Done with procedure');
+  -- dbms_output.put_line('Done with procedure');
 end;
 
 declare
@@ -255,10 +256,11 @@ begin
   roll = &roll;
   fine = 0;
   retreive_pending_fine(roll,fine);
-  dbms_output.put_line(fine);
+  dbms_output.put_line('Fine = ' || fine);
 end;
 
 
+-- similar_author_books
 CREATE OR REPLACE PROCEDURE similar_author_books(auth in varchar)
 AS
 temp varchar(300);
@@ -269,33 +271,10 @@ for rec in c1 loop
     dbms_output.put_line(rec.bookname);
 END LOOP;
 END;
--- procedure 6 -- 
-declare
-i_sbn number(13,0);
-c_opies lib.copies%type;
-d_elay_cost lib.delay_cost%type;
-b_ook_name lib.bookname%type;
-l_ost_cost lib.lost_cost%type;
-p_ublisher lib.publication%type;
-a_uthor lib.author%type;
-procedure book_info(i_sbn in number) is
-begin
-select copies,delay_cost,bookname,lost_cost,publication,author into c_opies,d_elay_cost,b_ook_name,l_ost_cost,p_ublisher,a_uthor from lib where lib.isbn=i_sbn;
-dbms_output.put_line('Copies : '||c_opies);
-dbms_output.put_line('delay_cost : '||d_elay_cost);
-dbms_output.put_line('book_name : '||b_ook_name);
-dbms_output.put_line('lost_cost : '||l_ost_cost);
-dbms_output.put_line('publisher : '||p_ublisher);
-dbms_output.put_line('author : '||a_uthor);
-end;
-begin
-dbms_output.put_line('Enter the book number');
-i_sbn:=&i_sbn;
-book_info(i_sbn);
-end;
 
--- procedure 8 -- 
-declare 
+-- procedure 8 --
+-- Get student details from book id
+declare
 book_id subscription.bookid%type;
 roll_no subscription.rollno%type;
 n_ame student.name%type;
@@ -312,20 +291,15 @@ dbms_output.put_line('fine : '||f_ine);
 dbms_output.put_line('Number of books issued : '||books_issued);
 end;
 begin
-dbms_output.put_line('Enter the isbn id of the book');
+dbms_output.put_line('Enter the book id of the book');
 book_id:=&book_id;
 student_details(book_id);
 end;
 
---similar author books
-CREATE OR REPLACE PROCEDURE similar_author_books(auth in varchar)
-AS
-temp varchar(300);
-cursor c1 is select bookname from lib where author = auth;
-rec varchar(300);
-BEGIN
-for rec in c1 loop
-    dbms_output.put_line(rec.bookname);
-END LOOP;
-END;
---Exec similar_author_books('BookName')
+-- Exec similar_author_books('BookName')
+declare
+author varchar(40);
+begin
+  author := &author;
+  similar_author_books(author);
+end;
