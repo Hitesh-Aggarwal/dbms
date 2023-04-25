@@ -40,13 +40,13 @@ CREATE TABLE
   );
 
 -- Drop tables
--- drop table student;
---
--- drop table subscription;
---
--- drop table lib;
---
--- drop table book;
+drop table student;
+
+drop table subscription;
+
+drop table lib;
+
+drop table book;
 
 -- select statements
 select * from student;
@@ -185,9 +185,14 @@ end;
 declare
 book_id number;
 roll_no number;
+r_date varchar(15);
+ret_date date;
 begin
   book_id := &book_id;
   roll_no := &roll_no;
+  r_date := &r_date;
+  ret_date := to_date(r_date, 'yyyy-mm-dd');
+  update subscription set actual_return_date = ret_date where rollno = roll_no and book_id = bookid;
   return_book(book_id,roll_no);
 end;
 
@@ -302,4 +307,29 @@ author varchar(40);
 begin
   author := &author;
   similar_author_books(author);
+end;
+
+
+-- Issue a book (procedure 1)
+create or replace procedure issue_book(roll_no in number, book_id in number, issue_date in date) is
+isbn_no number;
+begin
+  update student set issued_books = issued_books+1 where rollno = roll_no;
+  select isbn into isbn_no from book where bookid = book_id;
+  update lib set copies = copies - 1 where isbn = isbn_no;
+  update book set availability = 'O' where bookid = book_id;
+  insert into subscription values (book_id,roll_no,issue_date,issue_date + 30,NULL);
+end;
+
+declare
+roll_no number;
+book_id number;
+i_date varchar(15);
+issue_date date;
+begin
+  roll_no := &roll_no;
+  book_id := &book_id;
+  i_date := &i_date;
+  issue_date := to_date(i_date, 'yyyy-mm-dd');
+  issue_book(roll_no,book_id,issue_date);
 end;
