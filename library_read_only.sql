@@ -79,6 +79,15 @@ INSERT INTO student VALUES (8, 'MONICA', 639639639, 0, 0);
 INSERT INTO student VALUES (9, 'PHOEBE', 678678678, 0, 0);
 INSERT INTO student VALUES (10, 'RACHEL', 687687687,0, 0);
 
+INSERT INTO lib VALUES(1234,'Lord Of Chaos', 'Robert Jordan', 'MacMillan', 10, 100, 1);
+INSERT INTO lib VALUES(1235,'Fires Of Heaven', 'Robert Jordan', 'MacMillan', 11, 100, 1);
+
+INSERT INTO book VALUES(NULL, 1234, 'A');
+INSERT INTO book VALUES(NULL, 1235, 'A');
+
+INSERT INTO subscription VALUES(1,1, to_date('01-02-2023','dd-mm-yyyy'), to_date('27-02-2023','dd-mm-yyyy'), to_date('01-03-2023','dd-mm-yyyy'));
+INSERT INTO subscription VALUES(1,2, to_date('01-02-2023','dd-mm-yyyy'), to_date('27-02-2023','dd-mm-yyyy'), to_date('25-02-2023','dd-mm-yyyy'));
+
 
 ------------------ plsql starts here -----------------------
 
@@ -176,9 +185,14 @@ END;
 DECLARE
 book_id number;
 roll_no number;
+r_date varchar(15);
+ret_date date;
 BEGIN
   book_id := &book_id;
   roll_no := &roll_no;
+  r_date := &r_date;
+  ret_date := to_date(r_date, 'yyyy-mm-dd');
+  UPDATE subscription SET actual_return_date = ret_date WHERE rollno = roll_no AND book_id = bookid;
   return_book(book_id,roll_no);
 END;
 
@@ -194,13 +208,128 @@ BEGIN
   pay_fine(rollno);
 END;
 
+-- procedure 6 --
+-- BOOK INFO --
+DECLARE
+  i_sbn number;
+  c_opies lib.copies%TYPE;
+  d_elay_cost lib.delay_cost%TYPE;
+  b_ook_name lib.bookname%TYPE;
+  l_ost_cost lib.lost_cost%TYPE;
+  p_ublisher lib.publication%TYPE;
+  a_uthor lib.author%TYPE;
+  PROCEDURE book_info(i_sbn in number) IS
+  BEGIN
+    SELECT copies,delay_cost,bookname,lost_cost,publication,author INTO c_opies,d_elay_cost,b_ook_name,l_ost_cost,p_ublisher,a_uthor FROM lib WHERE lib.isbn=i_sbn;
+    dbms_output.put_line('Copies : '||c_opies);
+    dbms_output.put_line('delay_cost : '||d_elay_cost);
+    dbms_output.put_line('book_name : '||b_ook_name);
+    dbms_output.put_line('lost_cost : '||l_ost_cost);
+    dbms_output.put_line('publisher : '||p_ublisher);
+    dbms_output.put_line('author : '||a_uthor);
+  END;
+BEGIN
+  dbms_output.put_line('Enter the book number');
+  i_sbn:=&i_sbn;
+  book_info(i_sbn);
+END;
+
+-- Get the total fine of a student
+CREATE OR REPLACE PROCEDURE retreive_pending_fine(roll in number, fine in OUT number) AS
+  del_cost number;
+  isb_no number;
+  days number;
+  CURSOR c IS SELECT * FROM subscription WHERE rollno=roll;
+BEGIN
+  FOR rec in c LOOP
+    dbms_output.put_line(to_char(rec.return_date));
+    dbms_output.put_line(to_char(rec.actual_return_date));
+    IF rec.actual_return_date > rec.return_date THEN
+      SELECT isbn INTO isb_no FROM book WHERE bookid=rec.bookid;
+      SELECT delay_cost INTO del_cost FROM lib WHERE isbn=isb_no;
+      days := rec.actual_return_date - rec.return_date;
+      fine := fine + days*del_cost;
+    END IF;
+  END LOOP;
+  -- dbms_output.put_line('Done with procedure');
+END;
+
+DECLARE
+  roll number;
+  fine number;
+BEGIN
+  roll = &roll;
+  fine = 0;
+  retreive_pending_fine(roll,fine);
+  dbms_output.put_line('Fine = ' || fine);
+END;
+
+
+-- similar_author_books
 CREATE OR REPLACE PROCEDURE similar_author_books(auth in varchar)
 AS
-temp varchar(300);
-cursor c1 is select bookname from lib where author = auth;
+TEMP varchar(300);
+CURSOR c1 IS SELECT bookname FROM lib WHERE author = auth;
 rec varchar(300);
 BEGIN
-for rec in c1 loop
+FOR rec in c1 LOOP
     dbms_output.put_line(rec.bookname);
 END LOOP;
+END;
+
+-- procedure 8 --
+-- Get student details from book id
+DECLARE
+book_id subscription.bookid%TYPE;
+roll_no subscription.rollno%TYPE;
+n_ame student.name%TYPE;
+mobile_num student.m_no%TYPE;
+f_ine student.fine%TYPE;
+books_issued student.issued_books%TYPE;
+PROCEDURE student_details(book_id in number) IS
+BEGIN
+SELECT subscription.rollno INTO roll_no FROM subscription WHERE bookid=book_id;
+SELECT student.name,student.m_no,student.fine,student.issued_books INTO n_ame,mobile_num,f_ine,books_issued FROM student WHERE student.rollno=roll_no;
+dbms_output.put_line('Name : '||n_ame);
+dbms_output.put_line('Mobile Number : '||mobile_num);
+dbms_output.put_line('fine : '||f_ine);
+dbms_output.put_line('Number of books issued : '||books_issued);
+END;
+BEGIN
+dbms_output.put_line('Enter the book id of the book');
+book_id:=&book_id;
+student_details(book_id);
+END;
+
+-- Exec similar_author_books('BookName')
+DECLARE
+author varchar(40);
+BEGIN
+  author := &author;
+  similar_author_books(author);
+END;
+
+
+-- Issue a book (procedure 1)
+CREATE OR REPLACE PROCEDURE issue_book(roll_no in number, book_id in number, issue_date in date) IS
+isbn_no number;
+BEGIN
+  UPDATE student SET issued_books = issued_books+1 WHERE rollno = roll_no;
+  SELECT isbn INTO isbn_no FROM book WHERE bookid = book_id;
+  UPDATE lib SET copies = copies - 1 WHERE isbn = isbn_no;
+  UPDATE book SET availability = 'O' WHERE bookid = book_id;
+  INSERT INTO subscription VALUES (book_id,roll_no,issue_date,issue_date + 30,NULL);
+END;
+
+DECLARE
+roll_no number;
+book_id number;
+i_date varchar(15);
+issue_date date;
+BEGIN
+  roll_no := &roll_no;
+  book_id := &book_id;
+  i_date := &i_date;
+  issue_date := to_date(i_date, 'yyyy-mm-dd');
+  issue_book(roll_no,book_id,issue_date);
 END;
