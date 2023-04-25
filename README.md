@@ -1,20 +1,5 @@
-## Don't make any change to library_read_only.sql
-
-Formatted outputput of Library.sql is put in library_read_only.sql
-
-### Command to format Library.sql into library_read_only.sql
-
-```
-sqlformat -i "lower" -k "upper" -o "library_read_only.sql" Library.sql
-
-```
-
-### Install sqlformat first
-
-```
-sudo apt install sqlformat
-
-```
+Our project is a Library Management system backend made in Oracle PLSQL that eases the process of
+issuing books, returning them and mantaining book and student related data for administrators.
 
 # ER diagram
 ![ER diagram](er.png)
